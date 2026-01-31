@@ -1,13 +1,44 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tactile-tabletop</title>
+    <title>Tactile Tabletop</title>
+    <!-- We'll use a simple internal style for now to keep things in one place -->
+    <style>
+      :root {
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+        background-color: #242424;
+        color: white;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+      }
+      #app {
+        width: 100%;
+        text-align: center;
+      }
+      .role-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        background-color: #4a90e2;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div id="app">
+      <h1>Tactile Tabletop</h1>
+      <div id="status">Connecting to Owlbear Rodeo...</div>
+      <div id="ui-root"></div>
+    </div>
+    <!-- Vite handles the module loading automatically -->
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
