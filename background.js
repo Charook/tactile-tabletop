@@ -2,6 +2,7 @@ import OBR from "@owlbear-rodeo/sdk";
 
 const METADATA_ID = "com.tactile-tabletop.metadata";
 const SHIELD_ID = "tactile-tabletop-shield";
+console.log("Tactile Tabletop: Background script inititizing...");
 
 /**
  * Background script runs globally in the OBR room.
