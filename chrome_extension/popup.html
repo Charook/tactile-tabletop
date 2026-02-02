@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 200px;
+      padding: 15px;
+      font-family: sans-serif;
+      background: #222;
+      color: white;
+    }
+    h3 { margin-top: 0; font-size: 16px; color: #4a90e2; }
+    .status-box {
+      padding: 8px;
+      border-radius: 4px;
+      background: #333;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 8px;
+      background: #4a90e2;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #357abd; }
+  </style>
+</head>
+<body>
+  <h3>Tactile Tabletop</h3>
+  <div class="status-box">
+    Status: <span id="status-text">Disconnected</span>
+  </div>
+  <div class="toggle-group">
+    <button id="refresh-btn">Sync with OBR</button>
+  </div>
+  <p style="font-size: 10px; color: #888; margin-top: 15px;">
+    The shield activates automatically when this browser is flagged as "Tabletop" by the DM.
+  </p>
+  <script src="popup.js"></script>
+</body>
+</html>
