@@ -1,34 +1,34 @@
-const STORAGE_KEY = "tactile_tabletop_mode_active";
+// Log when the popup is opened
+console.log("Tactile Bridge Popup: Initialized and listening...");
 
-// Update the UI based on storage
-function updateUI() {
-  chrome.storage.local.get([STORAGE_KEY], (result) => {
-    const isActive = result[STORAGE_KEY] === true;
-    const statusText = document.getElementById('status-text');
-    if (statusText) {
-        statusText.innerText = isActive ? "SHIELD ACTIVE" : "SHIELD INACTIVE";
-        statusText.style.color = isActive ? "#4caf50" : "#e74c3c";
+// Listen for updates from the content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("Tactile Bridge Popup: Received message:", message);
+
+    if (message.type === "LOG_ENTRY") {
+        const logs = document.getElementById('debug-logs');
+        if (logs) {
+            // Remove the "Waiting" message on first real entry
+            if (logs.innerText.includes("Waiting for events...")) {
+                logs.innerHTML = "";
+            }
+
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.marginBottom = "4px";
+            entry.style.borderBottom = "1px solid #222";
+            entry.style.paddingBottom = "2px";
+            
+            const time = message.payload.time || new Date().toLocaleTimeString();
+            
+            entry.innerHTML = `
+                <span style="color: #666;">[${time}]</span> 
+                <span style="color: #3b82f6; font-weight: bold;">${message.payload.action}</span>: 
+                ${JSON.stringify(message.payload.data)}
+            `;
+            logs.prepend(entry);
+        }
     }
-  });
-}
-
-// Manual refresh to ensure storage is synced
-document.getElementById('refresh-btn').addEventListener('click', () => {
-  updateUI();
-  // Send a message to the Howcontent script to force a re-check
-  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "RECHECK_STATUS" });
-    }
-  });
+    // Acknowledge receipt
+    sendResponse({ status: "received" });
 });
-
-// Listen for storage changes to update the popup in real-time
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes[STORAGE_KEY]) {
-    updateUI();
-  }
-});
-
-// Initial load
-updateUI();

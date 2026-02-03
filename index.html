@@ -1,125 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tactile Tabletop</title>
-  <style>
-    body { font-family: sans-serif; background: #222; color: #fff; padding: 15px; margin: 0; }
-    .role-badge { background: #444; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; margin-bottom: 10px; display: inline-block; }
-    .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-    .tabletop-toggle { opacity: 0; width: 0; height: 0; }
-    .slider { 
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
-      background-color: #ccc; transition: .4s; border-radius: 20px; 
-    }
-    .slider:before {
-      position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px;
-      background-color: white; transition: .4s; border-radius: 50%;
-    }
-    .tabletop-toggle:checked + .slider { background-color: #4a90e2; }
-    .tabletop-toggle:checked + .slider:before { transform: translateX(20px); }
-  </style>
-</head>
-<body>
-  <div id="status">Connecting...</div>
-  <div id="ui-root"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tactile Tabletop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-[#242424] text-white p-4 font-sans select-none">
+    <div id="app" class="flex flex-col gap-4">
+      <header class="border-b border-gray-600 pb-2">
+        <h1 class="text-lg font-bold">Tactile Tabletop</h1>
+        <p class="text-xs text-gray-400">Hybrid Controller</p>
+      </header>
 
-  <script type="module">
-    import OBR from "@owlbear-rodeo/sdk";
+      <section class="flex items-center justify-between bg-[#333] p-3 rounded-lg">
+        <span class="text-sm font-medium">Overlay Active</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="overlay-toggle" class="sr-only peer">
+          <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
+      </section>
 
-    const METADATA_ID = "com.tactile-tabletop.metadata";
-    const MSG_TYPE = "TACTILE_TABLETOP_UPDATE";
-
-    async function setup() {
-      const statusElement = document.getElementById("status");
-      const uiRoot = document.getElementById("ui-root");
-
-      OBR.onReady(async () => {
-        const role = await OBR.player.getRole();
-        const name = await OBR.player.getName();
-        const myId = await OBR.player.getId();
-
-        statusElement.innerHTML = `Connected as: <strong>${name}</strong>`;
-
-        // Function to notify the Chrome Extension via window.parent
-        const notifyExtension = (isTabletop) => {
-          console.log(`Tactile Tabletop: Sending ${isTabletop ? 'ACTIVATE' : 'DEACTIVATE'} signal to extension.`);
-          window.parent.postMessage({
-            type: MSG_TYPE,
-            isActive: isTabletop
-          }, "*");
-        };
-
-        const checkTabletopStatus = async () => {
-          const metadata = await OBR.room.getMetadata();
-          const tabletopData = metadata[METADATA_ID] || {};
-          const isTabletop = tabletopData[myId] === true;
-          notifyExtension(isTabletop);
-          return isTabletop;
-        };
-
-        const renderDMInterface = async () => {
-          const players = await OBR.party.getPlayers();
-          const metadata = await OBR.room.getMetadata();
-          const tabletopData = metadata[METADATA_ID] || {};
-          
-          uiRoot.innerHTML = `
-            <div class="role-badge">DM View</div>
-            <p>Toggle <strong>Tabletop</strong> status for players:</p>
-            <ul style="list-style: none; padding: 0;">
-              ${players.map(p => {
-                const isTabletop = tabletopData[p.id] === true; 
-                return `
-                  <li style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #333; padding: 8px; border-radius: 4px;">
-                    <span>${p.name}</span>
-                    <label class="switch">
-                      <input type="checkbox" class="tabletop-toggle" data-id="${p.id}" ${isTabletop ? 'checked' : ''}>
-                      <span class="slider"></span>
-                    </label>
-                  </li>
-                `;
-              }).join('')}
-            </ul>
-          `;
-
-          document.querySelectorAll('.tabletop-toggle').forEach(toggle => {
-            toggle.onchange = async (e) => {
-              const playerId = toggle.getAttribute('data-id');
-              const isChecked = e.target.checked;
-              const currentMetadata = await OBR.room.getMetadata();
-              const currentTabletopData = currentMetadata[METADATA_ID] || {};
-              currentTabletopData[playerId] = isChecked;
-              await OBR.room.setMetadata({ [METADATA_ID]: currentTabletopData });
-            };
-          });
-        };
-
-        const renderPlayerInterface = async () => {
-          const isTabletop = await checkTabletopStatus();
-          uiRoot.innerHTML = isTabletop 
-            ? `<div class="role-badge" style="background: #e67e22;">TABLETOP MODE</div><p>Interaction blocked.</p>`
-            : `<div class="role-badge">Player View</div><p>Normal view.</p>`;
-        };
-
-        // Initial check and notify
-        await checkTabletopStatus();
-
-        if (role === "GM") {
-          renderDMInterface();
-          OBR.party.onChange(renderDMInterface);
-          OBR.room.onMetadataChange(() => {
-            renderDMInterface();
-            checkTabletopStatus(); // Keep local storage in sync even for DM
-          });
-        } else {
-          renderPlayerInterface();
-          OBR.room.onMetadataChange(renderPlayerInterface);
-        }
-      });
-    }
-
-    setup();
-  </script>
-</body>
+      <div id="status-box" class="text-[10px] bg-black/30 p-2 rounded border border-gray-700 font-mono text-blue-400">
+        Waiting for OBR SDK...
+      </div>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
 </html>

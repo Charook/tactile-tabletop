@@ -1,24 +1,29 @@
 {
-    "manifest_version": 3,
-    "name": "Tactile Tabletop Bridge",
-    "version": "1.0",
-    "description": "Bridges IR Touch Frame data with Owlbear Rodeo",
-    "permissions": [
-        "activeTab",
-        "scripting",
-        "storage"
-    ],
-    "host_permissions": [
-        "https://www.owlbear.app/"
-    ],
-    "action": {
-        "default_popup": "popup.html"
-    },
-    "content_scripts": [
-        {
-        "matches": ["https://www.owlbear.app/"],
-        "js": ["content.js"],
-        "run_at": "document_idle"
-        }
-    ]
+  "manifest_version": 3,
+  "name": "Tactile Tabletop Bridge",
+  "version": "1.0",
+  "description": "Bridges IR Touch Frame data with Owlbear Rodeo",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.owlbear.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.owlbear.app/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
 }
